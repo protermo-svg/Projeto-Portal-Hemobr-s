@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal do Cliente - Hemobrás | Gestão de Integridade Industrial</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #0284c7;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            
+            --status-ok: #16a34a;
+            --status-ok-bg: #dcfce7;
+            --status-progress: #0284c7;
+            --status-progress-bg: #e0f2fe;
+            --status-alert: #d97706;
+            --status-alert-bg: #fef3c7;
+            --status-danger: #dc2626;
+            --status-danger-bg: #fee2e2;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+
+        .navbar { background-color: var(--primary); color: #ffffff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--accent); }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-logo { background: var(--accent); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+        .client-badge { background: rgba(255, 255, 255, 0.1); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; border: 1px solid rgba(255, 255, 255, 0.2); }
+
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; width: 100%; flex: 1; }
+
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--card-bg); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-card.info { border-left: 5px solid var(--primary); }
+        .stat-card.ok { border-left: 5px solid var(--status-ok); }
+        .stat-card.progress { border-left: 5px solid var(--status-progress); }
+        .stat-card .label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+        .stat-card .number { font-size: 1.8rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+
+        .filter-panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+        .form-group input, .form-group select { padding: 9px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; }
+
+        .table-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
+        th { background-color: #f8fafc; color: var(--text-muted); padding: 12px 16px; border-bottom: 1px solid var(--border-color); text-transform: uppercase; font-size: 0.75rem; }
+        td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        
+        .tag-badge { font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.9rem; }
+        
+        .status-pill { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
+        .status-pill.em-dia { background-color: var(--status-ok-bg); color: var(--status-ok); }
+        .status-pill.em-andamento { background-color: var(--status-progress-bg); color: var(--status-progress); }
+
+        .btn-ficha { background-color: #f1f5f9; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem; color: var(--accent); transition: all 0.2s; }
+        .btn-ficha:hover { background-color: var(--accent); color: white; }
+
+        /* MODAL (FICHA TÉCNICA POP-UP) */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; padding: 1rem; }
+        .modal-card { background: white; border-radius: 12px; max-width: 900px; width: 100%; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-header { background: var(--primary); color: white; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        
+        .spec-box { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; background: #fafafa; }
+        .spec-title { font-size: 0.85rem; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; border-bottom: 2px solid var(--border-color); padding-bottom: 4px; }
+        .spec-item { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 4px 0; border-bottom: 1px dashed var(--border-color); }
+        .spec-item span:first-child { color: var(--text-muted); font-weight: 600; }
+        
+        .doc-list { list-style: none; margin-top: 8px; }
+        .doc-list li { font-size: 0.85rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .doc-list a { color: var(--accent); text-decoration: none; font-weight: 600; }
+
+        footer { text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border-color); background: #ffffff; margin-top: auto; }
+
+        @media (max-width: 768px) {
+            .modal-body { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="brand">
+            <div class="brand-logo">EM</div>
+            <div>
+                <h1 style="font-size: 1.1rem;">ENGENHARIA DE INSPEÇÃO & INTEGRIDADE</h1>
+                <span style="font-size: 0.75rem; color: #94a3b8;">Eng. Mecânico Especialista - CREA/PE</span>
+            </div>
+        </div>
+        <div class="client-badge">
+            🟢 <strong>Cliente:</strong> Hemobrás - Planta Goiana
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- RESUMO DA GESTÃO -->
+        <section class="summary-grid">
+            <div class="stat-card info">
+                <div class="label">Total sob Gestão</div>
+                <div class="number">6 <span>⚙️</span></div>
+            </div>
+            <div class="stat-card ok">
+                <div class="label">Inspeções em Dia</div>
+                <div class="number">2 <span>✅</span></div>
+            </div>
+            <div class="stat-card progress">
+                <div class="label">Em Andamento / Atualização</div>
+                <div class="number">4 <span>🔄</span></div>
+            </div>
+        </section>
+
+        <!-- FILTROS -->
+        <section class="filter-panel">
+            <div style="font-weight: bold; margin-bottom: 10px;">🔍 Busca Rápida</div>
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label>TAG ou Descrição</label>
+                    <input type="text" id="search-tag" placeholder="Ex: B7C03, Caldeira..." onkeyup="filterTable()">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="search-status" onchange="filterTable()">
+                        <option value="">Todos os Status</option>
+                        <option value="Em dia">Em Dia</option>
+                        <option value="Em andamento">Em Andamento</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- TABELA DE EQUIPAMENTOS REAL DA PLANILHA -->
+        <div class="table-card">
+            <table id="table-equip">
+                <thead>
+                    <tr>
+                        <th>TAG</th>
+                        <th>Descrição</th>
+                        <th>Categoria NR-13</th>
+                        <th>Fabricante</th>
+                        <th>Próxima Inspeção</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag-badge">B7C02</span></td>
+                        <td>Caldeira de Vapor</td>
+                        <td>B</td>
+                        <td>Miura</td>
+                        <td>27/02/2027</td>
+                        <td><span class="status-pill em-dia">Em dia</span></td>
+                        <td><button class="btn-ficha" onclick="openModal('B7C02', 'Caldeira de Vapor', 'B', 'Miura', '2022', 'BR01050080', 'LX300SG', '11,95 Kgf/cm²', '17,9 Kgf/cm²', '1694 Kgv/h', 'Gás Natural (GN)', 'ASME Sec. I 2019', '27/02/2027', 'Em dia')">📋 Ficha Técnica</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag-badge">B7C03</span></td>
+                        <td>Caldeira de Vapor</td>
+                        <td>B</td>
+                        <td>Miura</td>
+                        <td>27/02/2027</td>
+                        <td><span class="status-pill em-dia">Em dia</span></td>
+                        <td><button class="btn-ficha" onclick="openModal('B7C03', 'Caldeira de Vapor', 'B', 'Miura', '2022', 'BR01050081', 'LX300SG', '11,95 Kgf/cm²', '17,9 Kgf/cm²', '4694 Kgv/h', 'Gás Natural (GN)', 'ASME Sec. I 2019', '27/02/2027', 'Em dia')">📋 Ficha Técnica</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag-badge">DA-7C-1</span></td>
+                        <td>Desaerador Térmico</td>
+                        <td>IV (Vaso de Pressão)</td>
+                        <td>Heatmec</td>
+                        <td>--</td>
+                        <td><span class="status-pill em-andamento">Em andamento</span></td>
+                        <td><button class="btn-ficha" onclick="openModal('DA-7C-1', 'Desaerador Térmico', 'IV', 'Heatmec', '2022', 'OS 6355-22', 'Horizontal', '3,0 Kgf/cm²', '4,5 Kgf/cm²', '10 m³/h', 'Vapor / Água', 'ASME VIII div 1/2021', '--', 'Em andamento')">📋 Ficha Técnica</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag-badge">BDT-7C-1</span></td>
+                        <td>Tanque de Blowdown</td>
+                        <td>V (Vaso de Pressão)</td>
+                        <td>Heatmec</td>
+                        <td>--</td>
+                        <td><span class="status-pill em-andamento">Em andamento</span></td>
+                        <td><button class="btn-ficha" onclick="openModal('BDT-7C-1', 'Tanque de Blowdown', 'V', 'Heatmec', '2022', 'OS 6355-22', 'Vertical', '2,0 Kgf/cm²', '3,0 Kgf/cm²', '1 m³', 'Purga de Caldeira', 'ASME VIII Div. 1', '--', 'Em andamento')">📋 Ficha Técnica</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag-badge">V0615WEA036</span></td>
+                        <td>Abrandador (PRFV)</td>
+                        <td>Fora do Escopo (NR-13 13.2.2 j)</td>
+                        <td>Wave Cyber Co.</td>
+                        <td>--</td>
+                        <td><span class="status-pill em-andamento">Em andamento</span></td>
+                        <td><button class="btn-ficha" onclick="openModal('V0615WEA036', 'Abrandador de Água', 'Fora do Escopo NR-13', 'Wave Cyber Co.', '2021', 'S/N', 'Vaso de Fibra (PRFV)', '10,5 Kgf/cm²', '11,5 Kgf/cm²', 'Tratamento de Água', 'Água Bruta', 'ASME X/2010', '--', 'Em andamento')">📋 Ficha Técnica</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag-badge">V0708WEB027</span></td>
+                        <td>Abrandador (PRFV)</td>
+                        <td>Fora do Escopo (NR-13 13.2.2 j)</td>
+                        <td>Wave Cyber Co.</td>
+                        <td>--</td>
+                        <td><span class="status-pill em-andamento">Em andamento</span></td>
+                        <td><button class="btn-ficha" onclick="openModal('V0708WEB027', 'Abrandador de Água', 'Fora do Escopo NR-13', 'Wave Cyber Co.', '2021', 'S/N', 'Vaso de Fibra (PRFV)', '10,5 Kgf/cm²', '11,5 Kgf/cm²', 'Tratamento de Água', 'Água Bruta', 'ASME X/2010', '--', 'Em andamento')">📋 Ficha Técnica</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- MODAL / POP-UP DA FICHA TÉCNICA DO EQUIPAMENTO -->
+    <div id="fichaModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="m-title">Ficha Técnica do Equipamento</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- DADOS DE PLACA -->
+                <div class="spec-box">
+                    <div class="spec-title">Dados de Placa & Identificação</div>
+                    <div class="spec-item"><span>TAG:</span> <strong id="m-tag">--</strong></div>
+                    <div class="spec-item"><span>Descrição:</span> <strong id="m-desc">--</strong></div>
+                    <div class="spec-item"><span>Fabricante:</span> <span id="m-fab">--</span></div>
+                    <div class="spec-item"><span>Ano Fabricação:</span> <span id="m-ano">--</span></div>
+                    <div class="spec-item"><span>Nº de Série / OS:</span> <span id="m-serie">--</span></div>
+                    <div class="spec-item"><span>Modelo / Tipo:</span> <span id="m-modelo">--</span></div>
+                    <div class="spec-item"><span>PMTA:</span> <strong id="m-pmta" style="color: var(--accent);">--</strong></div>
+                    <div class="spec-item"><span>Pressão Teste Hidrost.:</span> <span id="m-teste">--</span></div>
+                    <div class="spec-item"><span>Capacidade / Volume:</span> <span id="m-cap">--</span></div>
+                    <div class="spec-item"><span>Combustível / Fluido:</span> <span id="m-comb">--</span></div>
+                    <div class="spec-item"><span>Código de Projeto:</span> <span id="m-proj">--</span></div>
+                    <div class="spec-item"><span>Categoria NR-13:</span> <strong id="m-cat">--</strong></div>
+                </div>
+
+                <!-- DOCUMENTAÇÃO E STATUS -->
+                <div class="spec-box">
+                    <div class="spec-title">Documentação & Integridade</div>
+                    <div class="spec-item"><span>Status Atual:</span> <span id="m-status">--</span></div>
+                    <div class="spec-item"><span>Próxima Inspeção:</span> <span id="m-prox">--</span></div>
+                    
+                    <div style="margin-top: 15px;">
+                        <div class="spec-title">Documentação Necessária / Checklist</div>
+                        <ul class="doc-list">
+                            <li>📄 <a href="#">Relatórios de Inspeção (PDF)</a></li>
+                            <li>📘 <a href="#">Prontuário do Equipamento</a></li>
+                            <li>📐 <a href="#">Projeto de Instalação</a></li>
+                            <li>📜 <a href="#">Certificados PSV e Manômetros</a></li>
+                            <li>📙 <a href="#">Manual de Operação / Procedimentos</a></li>
+                            <li>📗 <a href="#">Livro de Registro de Segurança</a></li>
+                            <li>🎓 <a href="#">Treinamento de Operadores</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Sistema de Gestão de Integridade Industrial | Desenvolvido para Hemobrás</p>
+    </footer>
+
+    <script>
+        function filterTable() {
+            var tagFilter = document.getElementById("search-tag").value.toUpperCase();
+            var statusFilter = document.getElementById("search-status").value.toUpperCase();
+            var tr = document.querySelectorAll("#table-equip tbody tr");
+            
+            tr.forEach(function(row) {
+                var text = row.textContent.toUpperCase();
+                var matchTag = !tagFilter || text.indexOf(tagFilter) > -1;
+                var matchStatus = !statusFilter || text.indexOf(statusFilter) > -1;
+                row.style.display = (matchTag && matchStatus) ? "" : "none";
+            });
+        }
+
+        function openModal(tag, desc, cat, fab, ano, serie, modelo, pmta, teste, cap, comb, proj, prox, status) {
+            document.getElementById("m-title").innerText = desc + " - " + tag;
+            document.getElementById("m-tag").innerText = tag;
+            document.getElementById("m-desc").innerText = desc;
+            document.getElementById("m-cat").innerText = cat;
+            document.getElementById("m-fab").innerText = fab;
+            document.getElementById("m-ano").innerText = ano;
+            document.getElementById("m-serie").innerText = serie;
+            document.getElementById("m-modelo").innerText = modelo;
+            document.getElementById("m-pmta").innerText = pmta;
+            document.getElementById("m-teste").innerText = teste;
+            document.getElementById("m-cap").innerText = cap;
+            document.getElementById("m-comb").innerText = comb;
+            document.getElementById("m-proj").innerText = proj;
+            document.getElementById("m-prox").innerText = prox;
+            document.getElementById("m-status").innerText = status;
+
+            document.getElementById("fichaModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("fichaModal").style.display = "none";
+        }
+    </script>
+</body>
+</html>

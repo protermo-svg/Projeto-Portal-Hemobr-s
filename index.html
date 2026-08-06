@@ -164,6 +164,57 @@
     </style>
 </head>
 <body>
+    <!-- CAIXA DE LOGIN / SENHA DE ACESSO -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-card">
+            <img src="logo.png" alt="Protermo Engenharia" onerror="this.onerror=null; this.src='https://protermoengenharia.com.br/wp-content/uploads/2020/06/logo-protermo.png';">
+            <h2>Área Restrita do Cliente</h2>
+            <p>Programa de Gestão de Integridade - Hemobrás</p>
+            <div class="login-form">
+                <input type="password" id="passInput" placeholder="Digite a chave de acesso" onkeypress="handleKeyPress(event)">
+                <button onclick="checkPassword()">Acessar Portal</button>
+            </div>
+            <div id="loginError" class="login-error">Chave de acesso incorreta! Tente novamente.</div>
+        </div>
+    </div>
+
+    /* TELA DE LOGIN / PROTEÇÃO POR SENHA */
+        .login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 1rem;
+        }
+        .login-card {
+            background: #ffffff;
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+        }
+        .login-card img { max-height: 60px; margin-bottom: 1.5rem; }
+        .login-card h2 { font-size: 1.25rem; color: var(--primary); margin-bottom: 0.5rem; }
+        .login-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .login-form { display: flex; flex-direction: column; gap: 12px; }
+        .login-form input {
+            padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px;
+            font-size: 1rem; outline: none; text-align: center; letter-spacing: 1px;
+        }
+        .login-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
+        .login-form button {
+            background: var(--accent); color: white; border: none; padding: 12px;
+            border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: background 0.2s;
+        }
+        .login-form button:hover { background: var(--accent-hover); }
+        .login-error { color: var(--status-danger); font-size: 0.8rem; font-weight: 600; margin-top: 8px; display: none; }
 
     <div class="top-banner">
         <img src="logo.png" alt="Protermo Engenharia" onerror="this.onerror=null; this.src='https://protermoengenharia.com.br/wp-content/uploads/2020/06/logo-protermo.png';">
@@ -423,6 +474,32 @@
     </footer>
 
     <script>
+        // LÓGICA DA CHAVE DE ACESSO
+        const SECRET_PASS = "pgi13hemobras"; // <-- COLOQUE A SENHA DESEJADA AQUI
+
+        window.onload = function() {
+            if (localStorage.getItem("pgi_authenticated") === "true") {
+                document.getElementById("loginOverlay").style.display = "none";
+            }
+        };
+
+        function checkPassword() {
+            const input = document.getElementById("passInput").value;
+            const errorMsg = document.getElementById("loginError");
+
+            if (input === SECRET_PASS) {
+                localStorage.setItem("pgi_authenticated", "true");
+                document.getElementById("loginOverlay").style.display = "none";
+            } else {
+                errorMsg.style.display = "block";
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === "Enter") {
+                checkPassword();
+            }
+        }
         function filterTable() {
             var tagFilter = document.getElementById("search-tag").value.toUpperCase();
             var statusFilter = document.getElementById("search-status").value.toUpperCase();

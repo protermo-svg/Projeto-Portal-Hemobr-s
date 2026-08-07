@@ -161,24 +161,7 @@
             .modal-body { grid-template-columns: 1fr; }
             .action-bar-top { justify-content: center; }
         }
-    </style>
-</head>
-<body>
-    <!-- CAIXA DE LOGIN / SENHA DE ACESSO -->
-    <div id="loginOverlay" class="login-overlay">
-        <div class="login-card">
-            <img src="logo.png" alt="Protermo Engenharia" onerror="this.onerror=null; this.src='https://protermoengenharia.com.br/wp-content/uploads/2020/06/logo-protermo.png';">
-            <h2>Área Restrita do Cliente</h2>
-            <p>Programa de Gestão de Integridade - Hemobrás</p>
-            <div class="login-form">
-                <input type="password" id="passInput" placeholder="Digite a chave de acesso" onkeypress="handleKeyPress(event)">
-                <button onclick="checkPassword()">Acessar Portal</button>
-            </div>
-            <div id="loginError" class="login-error">Chave de acesso incorreta! Tente novamente.</div>
-        </div>
-    </div>
-
-    /* TELA DE LOGIN / PROTEÇÃO POR SENHA */
+        /* TELA DE LOGIN / PROTEÇÃO POR SENHA */
         .login-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -215,7 +198,24 @@
         }
         .login-form button:hover { background: var(--accent-hover); }
         .login-error { color: var(--status-danger); font-size: 0.8rem; font-weight: 600; margin-top: 8px; display: none; }
+    </style>
+</head>
+<body>
+    <!-- CAIXA DE LOGIN / SENHA DE ACESSO -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-card">
+            <img src="logo.png" alt="Protermo Engenharia" onerror="this.onerror=null; this.src='https://protermoengenharia.com.br/wp-content/uploads/2020/06/logo-protermo.png';">
+            <h2>Área Restrita do Cliente</h2>
+            <p>Programa de Gestão de Integridade - Hemobrás</p>
+            <div class="login-form">
+                <input type="password" id="passInput" placeholder="Digite a chave de acesso" onkeypress="handleKeyPress(event)">
+                <button onclick="checkPassword()">Acessar Portal</button>
+            </div>
+            <div id="loginError" class="login-error">Chave de acesso incorreta! Tente novamente.</div>
+        </div>
+    </div>
 
+    
     <div class="top-banner">
         <img src="logo.png" alt="Protermo Engenharia" onerror="this.onerror=null; this.src='https://protermoengenharia.com.br/wp-content/uploads/2020/06/logo-protermo.png';">
     </div>
